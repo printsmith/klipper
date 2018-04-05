@@ -71,6 +71,13 @@ The following standard commands are supported:
   cycles. If the WRITE_FILE parameter is enabled, then the file
   /tmp/heattest.txt will be created with a log of all temperature
   samples taken during the test.
+- `HEATER_CALIBRATE HEATER=<config_name> TARGET=<temperature>
+  [WRITE_FILE=1]`: Detect the FOPDT parameters of a heater. The
+  specified heater will be enabled until the specified target
+  temperature is reached and then the heater will be turned off. If
+  the WRITE_FILE parameter is enabled, then the file /tmp/heattest.txt
+  will be created with a log of all temperature samples taken during
+  the test.
 - `SET_PRESSURE_ADVANCE [ADVANCE=<pressure_advance>]
   [ADVANCE_LOOKAHEAD_TIME=<pressure_advance_lookahead_time>]`:
   Set pressure advance parameters.
