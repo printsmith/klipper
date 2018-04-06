@@ -4,6 +4,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import math
+import pins
 
 IHOLDDELAY = 4
 TPOWERDOWN = 8
@@ -15,6 +16,9 @@ HEND = 2
 class tmc2130:
     def __init__(self, config):
         printer = config.get_printer()
+        # Register DUMP_TMC2130
+        gcode = printer.lookup_object("gcode")
+        gcode.register_command("DUMP_TMC2130", self.cmd_DUMP_TMC2130)
         # pin setup
         ppins = printer.lookup_object("pins")
         enable_pin = config.get('enable_pin')
@@ -55,6 +59,18 @@ class tmc2130:
         cs = int(32. * current * sense_resistor * math.sqrt(2.) / vsense
                  - 1. + .5)
         return max(0, min(31, cs))
+    def cmd_DUMP_TMC2130(self, params):
+        serial = self.mcu._serial
+        mcu_type = serial.msgparser.get_constant('MCU')
+        pin_resolver = pins.PinResolver(mcu_type)
+
+        eventtime = self.mcu.monotonic()
+        regs = [0x00, 0x01, 0x04, 0x12, 0x2d, 0x6a, 0x6b, 0x6c, 0x6f,
+                0x71, 0x73, 0x73]
+        for addr in regs:
+            eventtime = self.mcu.pause(eventtime + 0.005)
+            msg = "send_spi_message pin=%s msg=%02x%08x" % (self.pin, addr, 0)
+            self.mcu._serial.send(pin_resolver.update_command(msg))
 
 def load_config_prefix(config):
     return tmc2130(config)
