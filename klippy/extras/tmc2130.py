@@ -27,6 +27,7 @@ class tmc2130:
             raise pins.error("tmc2130 can not invert pin")
         self.mcu = enable_pin_params['chip']
         self.pin = enable_pin_params['pin']
+        self.mcu.add_config_cmd("set_digital_out pin=%s value=1" % (self.pin,))
         if config.getboolean('full_reset', True):
             self.full_reset()
         run_current = config.getfloat('run_current', above=0.)
