@@ -27,6 +27,8 @@ class tmc2130:
             raise pins.error("tmc2130 can not invert pin")
         self.mcu = enable_pin_params['chip']
         self.pin = enable_pin_params['pin']
+        if config.getboolean('full_reset', True):
+            self.full_reset()
         run_current = config.getfloat('run_current', above=0.)
         hold_current = config.getfloat('hold_current', above=0.)
         sense_resistor = config.getfloat('sense_resistor', 0.110, above=0.)
@@ -51,6 +53,17 @@ class tmc2130:
     def add_config_cmd(self, addr, val):
         self.mcu.add_config_cmd("send_spi_message pin=%s msg=%02x%08x" % (
             self.pin, (addr | 0x80) & 0xff, val & 0xffffffff))
+    def full_reset(self):
+        regs = [0x00, 0x10, 0x11, 0x13, 0x14, 0x15, 0x2d, 0x33,
+                0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67,
+                0x68, 0x69, 0x6c, 0x6e, 0x70, 0x72]
+        state = {0x60: 0xAAAAB554, 0x61: 0x4A9554AA, 0x62: 0x24492929,
+                 0x63: 0x10104222, 0x64: 0xFBFFFFFF, 0x65: 0xB5BB777D,
+                 0x66: 0x49295556, 0x67: 0x00404222,
+                 0x68: 0xFFFF8056, 0x69: 0x00F70000,
+                 0x72: 0x00050480}
+        for reg in regs:
+            self.add_config_cmd(reg, state.get(reg, 0x00000000))
     def current_bits(self, current, sense_resistor, vsense_on):
         sense_resistor += 0.020
         vsense = 0.32
