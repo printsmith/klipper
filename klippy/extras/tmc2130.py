@@ -44,9 +44,14 @@ class tmc2130:
             vsense = True
             irun = self.current_bits(run_current, sense_resistor, vsense)
             ihold = self.current_bits(hold_current, sense_resistor, vsense)
-        self.add_config_cmd(
-            0x6c, TOFF | (HSTRT << 4) | (HEND << 7) | (BLANK_TIME_SELECT << 15)
-            | (vsense << 17) | (microsteps << 24))
+        if config.getboolean('slow_decay_only', False):
+            self.add_config_cmd(
+                0x6c, TOFF | (1<<12) | (1<<14) | (BLANK_TIME_SELECT << 15)
+                | (vsense << 17) | (microsteps << 24))
+        else:
+            self.add_config_cmd(
+                0x6c, TOFF | (HSTRT << 4) | (HEND << 7) | (BLANK_TIME_SELECT << 15)
+                | (vsense << 17) | (microsteps << 24))
         # configure IHOLD_IRUN
         self.add_config_cmd(0x10, ihold | (irun << 8) | (IHOLDDELAY << 16))
         # configure TPOWERDOWN
