@@ -107,11 +107,13 @@ thermocouple_handle_max31855(uint8_t oid, struct thermocouple_spi *spi
     thermocouple_respond(oid, spi, next_begin_time, value, 0);
 }
 
+#define MAX31856_LTCBH_REG 0x0C
+
 static void
 thermocouple_handle_max31856(uint8_t oid, struct thermocouple_spi *spi
                              , uint32_t next_begin_time)
 {
-    uint8_t msg[4] = { 0x0C, 0x00, 0x00, 0x00 };
+    uint8_t msg[4] = { MAX31856_LTCBH_REG, 0x00, 0x00, 0x00 };
     spidev_transfer(spi->spi, 1, sizeof(msg), msg);
     uint32_t value;
     memcpy(&value, msg, sizeof(value));
@@ -119,15 +121,17 @@ thermocouple_handle_max31856(uint8_t oid, struct thermocouple_spi *spi
     thermocouple_respond(oid, spi, next_begin_time, value, 0);
 }
 
+#define MAX31865_RTDMSB_REG 0x01
+
 static void
 thermocouple_handle_max31865(uint8_t oid, struct thermocouple_spi *spi
                              , uint32_t next_begin_time)
 {
-    uint8_t msg[3] = { 0x01, 0x00, 0x00 };
-    spidev_transfer(spi->spi, 1, sizeof(msg), msg);
-    uint32_t value = 0;
+    uint8_t msg[4] = { MAX31865_RTDMSB_REG, 0x00, 0x00, 0x00 };
+    spidev_transfer(spi->spi, 1, 3, msg);
+    uint32_t value;
     memcpy(&value, msg, sizeof(value));
-    value = be32_to_cpu(value) & 0xffff;
+    value = (be32_to_cpu(value) >> 8) & 0xffff;
     if (value & 0x0001)
         try_shutdown("Thermocouple reader fault");
     thermocouple_respond(oid, spi, next_begin_time, value, 0);
