@@ -179,12 +179,17 @@ This section lists some commonly used config commands.
   This command creates an internal SPI object. It is used with
   spi_transfer and spi_send commands (see below).  The "bus"
   identifies the SPI bus to use (if the micro-controller has more than
-  one SPI bus available). The "pin" specifies the SPI SS pin. The
-  "mode" is the SPI mode (should be between 0 and 3). The "rate"
-  parameter specifies the SPI bus rate (in cycles per
+  one SPI bus available). The "pin" specifies the chip select (CS) pin
+  for the device. The "mode" is the SPI mode (should be between 0 and
+  3). The "rate" parameter specifies the SPI bus rate (in cycles per
   second). Finally, the "shutdown_msg" is an SPI command to send to
   the given device should the micro-controller go into a shutdown
   state.
+
+* `config_spi_without_cs oid=%c bus=%u mode=%u rate=%u
+  shutdown_msg=%*s` : This command is similar to config_spi, but
+  without a CS pin definition. It is useful for SPI devices that do
+  not have a chip select line.
 
 Common commands
 ===============
