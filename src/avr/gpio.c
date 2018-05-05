@@ -362,7 +362,7 @@ static const uint8_t SS = GPIO('B', 0), SCK = GPIO('B', 1);
 static const uint8_t MOSI = GPIO('B', 2), MISO = GPIO('B', 3);
 #endif
 
-void
+static void
 spi_init(void)
 {
     gpio_out_setup(SS, 1);
@@ -370,23 +370,18 @@ spi_init(void)
     gpio_out_setup(MOSI, 0);
     gpio_in_setup(MISO, 0);
 
-    // Power Reduction SPI bit must be written to "0"
-#ifdef PRR
-    PRR  &= ~(1<<PRSPI);
-#elif defined(PRR0)
-    PRR0 &= ~(1<<PRSPI);
-#endif
-
     SPCR = (1<<MSTR) | (1<<SPE);
     SPSR = 0;
 }
-DECL_INIT(spi_init);
 
 struct spi_config
 spi_setup(uint32_t bus, uint8_t mode, uint32_t rate)
 {
     if (bus || mode > 3)
         shutdown("Invalid spi_setup parameters");
+
+    // Make sure the SPI interface is enabled
+    spi_init();
 
     // Setup rate
     struct spi_config config = {0, 0};
