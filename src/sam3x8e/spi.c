@@ -6,6 +6,7 @@
 
 #include <stddef.h>   // NULL
 #include "autoconf.h"
+#include "command.h" // shutdown
 #include "gpio.h"
 #include "sched.h"
 #include <sam3x8e.h>
@@ -16,7 +17,7 @@
 
 #define CHANNEL    0 // Use same channel for all
 
-void
+static void
 spi_init(void)
 {
     /* Configure SCK, MISO and MOSI */
@@ -52,11 +53,16 @@ spi_init(void)
     /* Enable SPI */
     REGPTR->SPI_CR = SPI_CR_SPIEN;
 }
-DECL_INIT(spi_init);
 
 struct spi_config
 spi_setup(uint32_t bus, uint8_t mode, uint32_t rate)
 {
+    if (bus != CHANNEL || mode > 3)
+        shutdown("Invalid spi_setup parameters");
+
+    // Make sure bus is enabled
+    spi_init();
+
     uint32_t config = 0;
     uint32_t clockDiv;
     if (rate < (CHIP_FREQ_CPU_MAX / 255)) {
